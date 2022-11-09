@@ -1,0 +1,196 @@
+// opg10.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define nrOfRecords 100
+#define maxLength 50
+
+struct Record {
+	char name[50];
+	char address[50];
+	int age;
+	unsigned int phone;
+};
+Record list[nrOfRecords];
+
+//This code is uneccesarry for program, but it's nice to avoid adding elements with every test
+void start() {
+	FILE* fp1{}; // file pointer for output
+	const char* filename = "Record.txt"; // file name
+	
+	// open file for writing
+	fopen_s(&fp1, filename, "w");
+	
+	if (fp1 == 0) { // check for error
+	// write error message to standard error output
+		fprintf(stderr, "cannot write file %s\n", filename);
+		exit(1); // exit program with error code 1
+	}
+
+	// write comma-separated file
+	fprintf(fp1, "%s,%s,%d,%u\n", "Silas", "Din mors seng for 2. nat i streg", 24, 99999999);
+	fprintf(fp1, "%s,%s,%d,%u\n", "Mathias", "Copenhagen", 22, 26284475);
+	fprintf(fp1, "%s,%s,%d,%u\n", "David", "Herlev", 19, 66666666);
+	
+	// remember to close file
+	fclose(fp1);
+}
+void readFile() {
+	FILE* fp2{}; // file pointer for input
+	const char* filename = "Record.txt"; // file name
+	// open file for reading
+	fopen_s(&fp2, filename, "r");
+	if (fp2 == 0) { // check for error
+	// write to standard error output
+		fprintf(stderr, "cannot read file %s\n", filename);
+		exit(1); // exit program
+	}
+	// string buffers for name
+	//const int maxLength = 50;
+	char firstName[maxLength], lastName[maxLength], space[maxLength];
+	unsigned int phoneNumber;
+	// read comma-separated file
+	// repeat until end of file
+	int i = 0;
+	while (!feof(fp2))
+	{
+		// fscanf_s works best if you read one string at a time
+		fscanf_s(fp2, "%[^,]", list[i].name, maxLength); // read first name
+		fscanf_s(fp2, "%[ ,]", space, maxLength); // read comma
+		fscanf_s(fp2, "%[^,]", list[i].address, maxLength); // read last name
+		fscanf_s(fp2, "%[ ,]", space, maxLength); // read comma
+		fscanf_s(fp2, "%d", &list[i].age); // read phone number
+		fscanf_s(fp2, "%[ ,\r\n]", space, maxLength); // read newline
+		fscanf_s(fp2, "%[ ,]", space, maxLength); // read comma
+		fscanf_s(fp2, "%d", &list[i].phone); // read phone number
+		i++;
+	}
+	// remember to close file
+	fclose(fp2);
+}
+void addUser() {
+	
+	FILE* fp1{}; // file pointer for output
+	const char* filename = "Record.txt"; // file name
+	char name[maxLength];
+	char address[maxLength];
+	int age;
+	unsigned int phone;
+	
+	// open file for writing
+	fopen_s(&fp1, filename, "a+");
+	
+	if (fp1 == 0) { // check for error
+	// write error message to standard error output
+		fprintf(stderr, "cannot write file %s\n", filename);
+		exit(1); // exit program with error code 1
+	}
+	
+	puts("Enter name: ");
+	scanf_s("%s", name, maxLength);
+	puts("Enter address: ");
+	scanf_s("%s", address, maxLength);
+	puts("Enter age: ");
+	scanf_s("%d", &age);
+	puts("Enter phonenumber: ");
+	scanf_s("%d", &phone);
+	
+	// write comma-separated file
+	fprintf(fp1, "%s,%s,%u,%u\n", name, address, age, phone);
+	
+	// remember to close file
+	fclose(fp1);
+}
+
+void searchUser() {
+	int phone;
+	puts("Enter phone number:");
+	scanf_s("%d", &phone);
+	int tries = 0;
+	while (1)
+	{
+		if (list[tries].phone == phone) {
+			printf("User %s, %s, age: %u was located with phonenumber: %d\n", list[tries].name, list[tries].address, list[tries].age, list[tries].phone);
+			break;
+		}
+		if (tries == nrOfRecords) {
+			puts("unable to finder user");
+			break;
+		}
+
+		tries++;
+	}
+}
+
+void bubbleSort() {
+
+	int i, j, g;
+	struct Record temp;
+	int displayedContacts = 0;
+
+	//Da det ikke er nok at tilføje if statement i nested for loop må det allerede være her vi undgår at tilgå NULL elementer
+	for (g = 0; g < nrOfRecords; g++)
+	{
+		if (list[g].phone != 0) //If statement for at undgå at printe hvis der ikke eksisterer en kontakt
+		{
+			displayedContacts++;
+		}
+	}
+
+	for (i = 0; i < displayedContacts - 1; i++)
+	{
+		for (j = 0; j < (displayedContacts - 1 - i); j++)
+		{	
+			if (list[j].phone > list[j + 1].phone)
+			{
+				temp = list[j + 1];
+				list[j + 1] = list[j];
+				list[j] = temp;
+				puts("element sorted");
+			}
+		}
+	}
+}
+
+int main() {
+
+	int choice;
+	start();
+	readFile(); //Filen læses og data indlæses i struct
+	while (1) {
+		printf("\nYour current options are:\n[1] - Display current users\n[2] - Add newuser\n[3] - Search for user by phonenumber\n[4] - Sort records list\n");
+			scanf_s("%d", &choice);
+		switch (choice)
+		{
+		case 1:
+
+			puts("current users in system:\n");
+			for (int i = 0; i < nrOfRecords; i++)
+			{
+				//readFile(); //Filen læses og data indlæses i struct
+				if (list[i].phone != 0) //If statement for at undgå at printe hvis der ikke eksisterer en kontakt
+				{
+				printf("[%d]: name:%s, address:%s, age:%u, phone:%d\n", i + 1, list[i].name, list[i].address, list[i].age, list[i].phone);
+				}
+				else { break; }
+			}
+			break;
+		case 2:
+
+			addUser(); //User tilføjes til tekstfil
+			break;
+		case 3:
+			//readFile();
+			searchUser();
+			break;
+
+		case 4:
+			//readFile();
+			bubbleSort();
+			break;
+		}
+	}
+	// end program
+	return 0;
+}
